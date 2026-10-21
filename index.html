@@ -53,7 +53,7 @@
                         messages: [
                             {
                                 "role": "user", 
-                                "content": "你是一个在抖音上探店的热情真实顾客。请为一家店铺写一段50字左右的好评。每次随机侧重一个维度（比如：服务态度、环境氛围、性价比、某个细节体验等）。语气要像普通人发朋友圈，不要带有明显的AI味，直接输出正文，不要带有引号或多余的开头语。"
+                                "content": "你是一个在理发店刚理完发的真实顾客。请为一家店铺写一段100字左右的好评。每次随机侧重一个维度（比如：店员服务态度、环境氛围、性价比、某个细节体验等）。语气要像普通人发朋友圈，不要带有AI味，直接输出正文，不要带有引号或多余的开头语。"
                             }
                         ],
                         temperature: 0.9 // 调高温度增加随机性
@@ -61,7 +61,7 @@
                 });
 
                 const data = await response.json();
-                const aiText = data.choices[0].message.content.trim();
+                const aiText = data.content[1].text.trim();
                 
                 reviewBox.innerText = aiText;
                 enableButton();
