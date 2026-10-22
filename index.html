@@ -5,15 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>感谢您的评价</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 40px 20px; background-color: #f7f8fa; }
+        body { font-family: sans-serif; text-align: center; padding: 40px 20px; background-color: #f7f8fa; margin: 0; }
         .card { background: #fff; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h2 { color: #333; margin-bottom: 20px; }
         .review-text { background: #f0f2f5; padding: 15px; border-radius: 8px; color: #555; font-size: 16px; margin-bottom: 30px; text-align: left; min-height: 80px; }
-        .btn { background: #fe2c55; color: #fff; border: none; padding: 15px 0; width: 100%; border-radius: 25px; font-size: 18px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: opacity 0.3s; }
+        
+        /* 按钮样式 */
+        .btn { background: #fe2c55; color: #fff; border: none; padding: 15px 0; width: 100%; border-radius: 25px; font-size: 18px; font-weight: bold; opacity: 0.5; transition: opacity 0.3s; }
         .btn.active { opacity: 1; cursor: pointer; }
         .btn.active:active { background: #e0244b; }
+        
+        /* 加载动画 */
         .loading { animation: blink 1.5s infinite; color: #888; text-align: center; }
         @keyframes blink { 0% {opacity: .2;} 50% {opacity: 1;} 100% {opacity: .2;} }
+
+        /* 微信引导遮罩层样式 */
+        #wechatMask {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 9999; color: #fff;
+        }
+        .mask-content { position: relative; width: 100%; height: 100%; }
+        .mask-arrow { position: absolute; top: 20px; right: 30px; font-size: 40px; font-weight: bold; }
+        .mask-text { position: absolute; top: 80px; right: 30px; text-align: right; font-size: 18px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -22,19 +35,35 @@
         <p style="color:#666; font-size:14px; margin-bottom:20px;">送您一段专属好评文案，点击下方按钮复制并去抖音评价：</p>
         
         <div id="reviewContent" class="review-text">
-            <div class="loading">AI正在为您生成好评...</div>
+            <div class="loading">AI正在为您生成专属好评...</div>
         </div>
 
-        <!-- 抖音商户短链接 -->
-        <button id="actionBtn" class="btn" onclick="copyAndJump('https://v.douyin.com/你的短链接/')">
+        <!-- 按钮：点击触发 handleAction，请在下方JS中配置你的抖音链接 -->
+        <button id="actionBtn" class="btn" onclick="handleAction()">
             生成中请稍候...
         </button>
+    </div>
+
+    <!-- 微信右上角引导遮罩 -->
+    <div id="wechatMask" onclick="this.style.display='none'">
+        <div class="mask-content">
+            <div class="mask-arrow">↗</div>
+            <div class="mask-text">
+                点击右上角 <strong>···</strong><br>
+                选择在<strong>浏览器</strong>打开<br>
+                即可前往抖音评价
+            </div>
+        </div>
     </div>
 
     <script>
         // 配置你的 AI API 信息
         const API_KEY = 'sk-cp-k0FsHjP3XMlncOw6j4RutVpfm8isuf63UdNicN_i-oLsHxfX90fjYBpOHHXyB4FoT6topjGCI-qgAC1yxX2q2wLUkwPJhDWHdKrJSs8mvwVz_tR9CgxYiS4'; 
         const API_URL = 'https://api.minimax.cn/anthropic/v1/messages';
+
+        // 2. 替换为你提取到的抖音商户纯净短链接
+        const DOUYIN_URL = 'https://v.douyin.com/ylLC116Y4rE/';
+        // ==============================================
 
         const reviewBox = document.getElementById('reviewContent');
         const actionBtn = document.getElementById('actionBtn');
@@ -53,7 +82,7 @@
                         messages: [
                             {
                                 "role": "user", 
-                                "content": "你是一个在理发店刚理完发的真实顾客。请为一家店铺写一段100字左右的好评。每次随机侧重一个维度（比如：店员服务态度、环境氛围、性价比、某个细节体验等）。语气要像普通人发朋友圈，不要带有AI味，直接输出正文，不要带有引号或多余的开头语。"
+                                "content": "你是一个在理发店刚理完发的真实顾客。请为一家店铺写一段100字左右的好评。每次随机侧重两个维度（比如：店员服务态度、环境氛围、性价比、烫发效果，染发效果以及某个细节体验等）。语气要像普通人发朋友圈，不要带有AI味，直接输出正文，不要带有引号或多余的开头语。"
                             }
                         ],
                         temperature: 0.9 // 调高温度增加随机性
@@ -83,34 +112,54 @@
         // 页面加载即触发请求
         window.onload = fetchAIReview;
 
-        // 复制并跳转逻辑
-        function copyAndJump(douyinUrl) {
-            if (!actionBtn.classList.contains('active')) return;
-            
-            const textToCopy = reviewBox.innerText;
+        // 检测是否为微信环境
+        function isWechat() {
+            return /MicroMessenger/i.test(navigator.userAgent);
+        }
+
+        // 独立的复制功能
+        function copyToClipboard(text) {
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    window.location.href = douyinUrl;
-                }).catch(() => fallbackCopy(textToCopy, douyinUrl));
+                navigator.clipboard.writeText(text).catch(()=>{});
             } else {
-                fallbackCopy(textToCopy, douyinUrl);
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.select();
+                try { document.execCommand('copy'); } catch (err) {}
+                document.body.removeChild(textArea);
             }
         }
 
-        function fallbackCopy(text, url) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed";
-            textArea.style.left = "-999999px";
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                window.location.href = url;
-            } catch (err) {
-                alert("复制失败，请手动长按复制文案后打开抖音");
+        // 统一的按钮点击处理函数
+        function handleAction() {
+            if (!actionBtn.classList.contains('active')) return;
+            
+            const textToCopy = reviewBox.innerText;
+            
+            // 如果是微信，先复制文案，然后弹出遮罩层引导跳出
+            if (isWechat()) {
+                copyToClipboard(textToCopy);
+                document.getElementById('wechatMask').style.display = 'block';
+                return;
             }
-            document.body.removeChild(textArea);
+            
+            // 如果不是微信，直接复制并跳转抖音
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    window.location.href = DOUYIN_URL;
+                }).catch(() => fallbackCopyAndJump(textToCopy));
+            } else {
+                fallbackCopyAndJump(textToCopy);
+            }
+        }
+
+        // 兼容旧版浏览器的复制跳转
+        function fallbackCopyAndJump(text) {
+            copyToClipboard(text);
+            window.location.href = DOUYIN_URL;
         }
     </script>
 </body>
