@@ -9,9 +9,19 @@
         .card { background: #fff; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         h2 { color: #333; margin-bottom: 20px; }
         .review-text { background: #f0f2f5; padding: 15px; border-radius: 8px; color: #555; font-size: 16px; margin-bottom: 30px; text-align: left; min-height: 80px; }
-        .btn { background: #fe2c55; color: #fff; border: none; padding: 15px 0; width: 100%; border-radius: 25px; font-size: 18px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: opacity 0.3s; }
+        
+        /* 通用按钮样式 */
+        .btn { border: none; padding: 15px 0; width: 100%; border-radius: 25px; font-size: 18px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: opacity 0.3s; margin-bottom: 15px; }
         .btn.active { opacity: 1; cursor: pointer; }
-        .btn.active:active { background: #e0244b; }
+        
+        /* 抖音按钮专属颜色 */
+        .douyin-btn { background: #fe2c55; color: #fff; }
+        .douyin-btn.active:active { background: #e0244b; }
+        
+        /* 美团按钮专属颜色 */
+        .meituan-btn { background: #FFC300; color: #333; }
+        .meituan-btn.active:active { background: #e6b000; }
+        
         .loading { animation: blink 1.5s infinite; color: #888; text-align: center; }
         @keyframes blink { 0% {opacity: .2;} 50% {opacity: 1;} 100% {opacity: .2;} }
     </style>
@@ -19,18 +29,19 @@
 <body>
     <div class="card">
         <h2>感谢您的支持！</h2>
-        <p style="color:#666; font-size:14px; margin-bottom:20px;">送您一段专属好评文案，点击下方按钮复制并去抖音评价：</p>
+        <p style="color:#666; font-size:14px; margin-bottom:20px;">送您一段专属好评文案，点击下方按钮复制并去对应平台评价：</p>
         
         <div id="reviewContent" class="review-text">
-            <div class="loading">正在为您生成好评...</div>
+            <div class="loading">AI正在为您生成好评...</div>
         </div>
 
-        <!-- 抖音商户短链接 -->
-        <button id="actionBtn" class="btn" onclick="copyAndJump('https://v.douyin.com/你的短链接/')">
+        <!-- 抖音商户短链接按钮 -->
+        <button id="douyinBtn" class="btn douyin-btn" onclick="copyAndJump('https://v.douyin.com/')">
             生成中请稍候...
         </button>
-        <!-- 美团商户短链接 -->
-        <button id="actionMtBtn" class="btn" onclick="copyAndJump('https://sl.meituan.com/emCZYKkeQbvoQcg/')">
+        
+        <!-- 美团商户短链接按钮 -->
+        <button id="meituanBtn" class="btn meituan-btn" onclick="copyAndJump('https://sl.meituan.com/')">
             生成中请稍候...
         </button>
     </div>
@@ -42,7 +53,7 @@
 
         const reviewBox = document.getElementById('reviewContent');
         const actionBtn = document.getElementById('actionBtn');
-        const actionMtBtn = document.getElementById('actionMtBtn');
+        const meituanBtn = document.getElementById('meituanBtn');
 
         // 调用 AI 接口生成文案
         async function fetchAIReview() {
@@ -83,26 +94,27 @@
             actionBtn.classList.add('active');
             actionBtn.innerText = '一键复制并打开抖音';
             actionBtn.disabled = false;
-            
-            actionMtBtn.classList.add('active');
-            actionMtBtn.innerText = '一键复制并打开美团';
-            actionMtBtn.disabled = false;
+
+            meituanBtn.classList.add('active');
+            meituanBtn.innerText = '一键复制并打开美团';
+            meituanBtn.disabled = false;
         }
 
         // 页面加载即触发请求
         window.onload = fetchAIReview;
 
         // 复制并跳转逻辑
-        function copyAndJump(douyinUrl) {
-            if (!actionBtn.classList.contains('active')) return;
+        function copyAndJump(targetUrl) {
+            // 如果按钮还未激活（AI没生成完），则不执行
+            if (!douyinBtn.classList.contains('active')) return;
             
             const textToCopy = reviewBox.innerText;
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
-                    window.location.href = douyinUrl;
-                }).catch(() => fallbackCopy(textToCopy, douyinUrl));
+                    window.location.href = targetUrl;
+                }).catch(() => fallbackCopy(textToCopy, targetUrl));
             } else {
-                fallbackCopy(textToCopy, douyinUrl);
+                fallbackCopy(textToCopy, targetUrl);
             }
         }
 
@@ -117,7 +129,7 @@
                 document.execCommand('copy');
                 window.location.href = url;
             } catch (err) {
-                alert("复制失败，请手动长按复制文案后打开抖音");
+                alert("复制失败，请手动长按复制文案后打开目标App");
             }
             document.body.removeChild(textArea);
         }
