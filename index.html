@@ -52,7 +52,7 @@
         const API_URL = 'https://api.minimax.cn/anthropic/v1/messages';
 
         const reviewBox = document.getElementById('reviewContent');
-        const actionBtn = document.getElementById('actionBtn');
+        const douyinBtn = document.getElementById('douyinBtn');
         const meituanBtn = document.getElementById('meituanBtn');
 
         // 调用 AI 接口生成文案
@@ -91,9 +91,9 @@
         }
 
         function enableButton() {
-            actionBtn.classList.add('active');
-            actionBtn.innerText = '一键复制并打开抖音';
-            actionBtn.disabled = false;
+            douyinBtn.classList.add('active');
+            douyinBtn.innerText = '一键复制并打开抖音';
+            douyinBtn.disabled = false;
 
             meituanBtn.classList.add('active');
             meituanBtn.innerText = '一键复制并打开美团';
