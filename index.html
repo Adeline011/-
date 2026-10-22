@@ -29,6 +29,10 @@
         <button id="actionBtn" class="btn" onclick="copyAndJump('https://v.douyin.com/你的短链接/')">
             生成中请稍候...
         </button>
+        <!-- 美团商户短链接 -->
+        <button id="actionMtBtn" class="btn" onclick="copyAndJump('https://sl.meituan.com/emCZYKkeQbvoQcg/')">
+            生成中请稍候...
+        </button>
     </div>
 
     <script>
@@ -38,6 +42,7 @@
 
         const reviewBox = document.getElementById('reviewContent');
         const actionBtn = document.getElementById('actionBtn');
+        const actionMtBtn = document.getElementById('actionMtBtn');
 
         // 调用 AI 接口生成文案
         async function fetchAIReview() {
@@ -78,6 +83,10 @@
             actionBtn.classList.add('active');
             actionBtn.innerText = '一键复制并打开抖音';
             actionBtn.disabled = false;
+            
+            actionMtBtn.classList.add('active');
+            actionMtBtn.innerText = '一键复制并打开美团';
+            actionMtBtn.disabled = false;
         }
 
         // 页面加载即触发请求
